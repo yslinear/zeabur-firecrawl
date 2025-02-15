@@ -95,6 +95,10 @@ spec:
       type: STRING
       name: Supabase Service Token
       description: Supabase service role token
+    - key: USE_DB_AUTHENTICATION
+      type: STRING
+      name: Use DB Authentication
+      description: Whether to enable database authentication (true/false)
     - key: SLACK_WEBHOOK_URL
       type: STRING
       name: Slack Webhook URL
@@ -197,7 +201,7 @@ spec:
           PLAYWRIGHT_MICROSERVICE_URL:
             default: "http://playwright-service:3000"
           USE_DB_AUTHENTICATION:
-            default: "false"
+            default: "${USE_DB_AUTHENTICATION}"
           PORT:
             default: "3002"
           NUM_WORKERS_PER_QUEUE:
