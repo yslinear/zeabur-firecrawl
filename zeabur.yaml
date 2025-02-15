@@ -41,29 +41,6 @@ spec:
     - Manages job queues
     - Provides data persistence
 
-    ## Optional Variables
-    ```
-    OPENAI_BASE_URL=                       # Custom OpenAI API base URL
-    MODEL_NAME=                            # The AI model name to use
-    SUPABASE_URL=                         # Supabase project URL
-    SUPABASE_ANON_TOKEN=                  # Supabase anonymous token
-    SUPABASE_SERVICE_TOKEN=               # Supabase service role token
-    PROXY_SERVER=                         # Proxy server for Playwright service
-    PROXY_USERNAME=                       # Proxy server username
-    PROXY_PASSWORD=                       # Proxy server password
-    BLOCK_MEDIA=true                      # Block media content for faster scraping
-    SLACK_WEBHOOK_URL=                    # Slack webhook URL for notifications
-    LLAMAPARSE_API_KEY=                   # LlamaParse API key
-    SCRAPING_BEE_API_KEY=                 # ScrapingBee API key
-    SERPER_API_KEY=                       # Serper API key
-    SEARCHAPI_API_KEY=                    # SearchAPI API key
-    LOGGING_LEVEL=                        # Logging level
-    BULL_AUTH_KEY=                        # Bull queue authentication key
-    POSTHOG_API_KEY=                      # PostHog API key
-    POSTHOG_HOST=                         # PostHog host
-    SELF_HOSTED_WEBHOOK_URL=              # Self-hosted webhook URL
-    ```
-
     ## Getting Started
 
     1. Deploy this template on Zeabur
@@ -72,7 +49,16 @@ spec:
 
     For more detailed documentation, visit [FireCrawl Documentation](https://docs.firecrawl.dev)
 
+    ## Issues
+
+    For questions and support, please visit the [GitHub Issues](https://github.com/yslinear/zeabur-firecrawl/issues)
+
+
   variables:
+    - key: PUBLIC_DOMAIN
+      type: DOMAIN
+      name: Domain
+      description: The domain of your FireCrawl API
     - key: OPENAI_API_KEY
       type: STRING
       name: OpenAI API Key
@@ -81,10 +67,74 @@ spec:
       type: STRING
       name: Model Name
       description: The AI model name to use
-    - key: PUBLIC_DOMAIN
-      type: DOMAIN
-      name: Domain
-      description: The domain of your FireCrawl API
+    - key: OPENAI_BASE_URL
+      type: STRING
+      name: OpenAI Base URL
+      description: Custom OpenAI API base URL
+    - key: PROXY_SERVER
+      type: STRING
+      name: Proxy Server
+      description: Proxy server for Playwright service
+    - key: PROXY_USERNAME
+      type: STRING
+      name: Proxy Username
+      description: Proxy server username
+    - key: PROXY_PASSWORD
+      type: STRING
+      name: Proxy Password
+      description: Proxy server password
+    - key: SUPABASE_URL
+      type: STRING
+      name: Supabase URL
+      description: Supabase project URL
+    - key: SUPABASE_ANON_TOKEN
+      type: STRING
+      name: Supabase Anon Token
+      description: Supabase anonymous token
+    - key: SUPABASE_SERVICE_TOKEN
+      type: STRING
+      name: Supabase Service Token
+      description: Supabase service role token
+    - key: SLACK_WEBHOOK_URL
+      type: STRING
+      name: Slack Webhook URL
+      description: Slack webhook URL for notifications
+    - key: LLAMAPARSE_API_KEY
+      type: STRING
+      name: LlamaParse API Key
+      description: LlamaParse API key for PDF parsing
+    - key: SCRAPING_BEE_API_KEY
+      type: STRING
+      name: ScrapingBee API Key
+      description: ScrapingBee API key for fallback scraping
+    - key: SERPER_API_KEY
+      type: STRING
+      name: Serper API Key
+      description: Serper API key for search functionality
+    - key: SEARCHAPI_API_KEY
+      type: STRING
+      name: SearchAPI API Key
+      description: SearchAPI API key for search functionality
+    - key: BULL_AUTH_KEY
+      type: STRING
+      name: Bull Auth Key
+      description: Bull queue authentication key
+    - key: POSTHOG_API_KEY
+      type: STRING
+      name: PostHog API Key
+      description: PostHog API key for analytics
+    - key: POSTHOG_HOST
+      type: STRING
+      name: PostHog Host
+      description: PostHog host URL
+    - key: SELF_HOSTED_WEBHOOK_URL
+      type: STRING
+      name: Self-hosted Webhook URL
+      description: Self-hosted webhook URL for notifications
+    - key: LOGGING_LEVEL
+      type: STRING
+      name: Logging Level
+      description: Logging level for the application
 
   services:
     - name: playwright-service
@@ -97,11 +147,11 @@ spec:
           PORT:
             default: "3000"
           PROXY_SERVER:
-            default: ""
+            default: "${PROXY_SERVER}"
           PROXY_USERNAME:
-            default: ""
+            default: "${PROXY_USERNAME}"
           PROXY_PASSWORD:
-            default: ""
+            default: "${PROXY_PASSWORD}"
           BLOCK_MEDIA:
             default: "true"
 
@@ -147,11 +197,11 @@ spec:
           PLAYWRIGHT_MICROSERVICE_URL:
             default: "http://playwright-service:3000"
           USE_DB_AUTHENTICATION:
-            default: ""
+            default: "false"
           PORT:
             default: "3002"
           NUM_WORKERS_PER_QUEUE:
-            default: ""
+            default: "8"
           OPENAI_API_KEY:
             default: "${OPENAI_API_KEY}"
           OPENAI_BASE_URL:
@@ -159,37 +209,33 @@ spec:
           MODEL_NAME:
             default: "${MODEL_NAME}"
           SLACK_WEBHOOK_URL:
-            default: ""
+            default: "${SLACK_WEBHOOK_URL}"
           LLAMAPARSE_API_KEY:
-            default: ""
-          LOGTAIL_KEY:
-            default: ""
+            default: "${LLAMAPARSE_API_KEY}"
           BULL_AUTH_KEY:
-            default: ""
-          TEST_API_KEY:
-            default: ""
+            default: "${BULL_AUTH_KEY}"
           POSTHOG_API_KEY:
-            default: ""
+            default: "${POSTHOG_API_KEY}"
           POSTHOG_HOST:
-            default: ""
+            default: "${POSTHOG_HOST}"
           SUPABASE_ANON_TOKEN:
-            default: ""
+            default: "${SUPABASE_ANON_TOKEN}"
           SUPABASE_URL:
-            default: ""
+            default: "${SUPABASE_URL}"
           SUPABASE_SERVICE_TOKEN:
-            default: ""
+            default: "${SUPABASE_SERVICE_TOKEN}"
           SCRAPING_BEE_API_KEY:
-            default: ""
+            default: "${SCRAPING_BEE_API_KEY}"
           HOST:
             default: "0.0.0.0"
           SELF_HOSTED_WEBHOOK_URL:
-            default: ""
+            default: "${SELF_HOSTED_WEBHOOK_URL}"
           SERPER_API_KEY:
-            default: ""
+            default: "${SERPER_API_KEY}"
           SEARCHAPI_API_KEY:
-            default: ""
+            default: "${SEARCHAPI_API_KEY}"
           LOGGING_LEVEL:
-            default: ""
+            default: "${LOGGING_LEVEL}"
           FLY_PROCESS_GROUP:
             default: "app"
         dependencies:
@@ -228,11 +274,11 @@ spec:
           PLAYWRIGHT_MICROSERVICE_URL:
             default: "http://playwright-service:3000"
           USE_DB_AUTHENTICATION:
-            default: ""
+            default: "false"
           PORT:
             default: "3002"
           NUM_WORKERS_PER_QUEUE:
-            default: ""
+            default: "8"
           OPENAI_API_KEY:
             default: "${OPENAI_API_KEY}"
           OPENAI_BASE_URL:
@@ -240,37 +286,33 @@ spec:
           MODEL_NAME:
             default: "${MODEL_NAME}"
           SLACK_WEBHOOK_URL:
-            default: ""
+            default: "${SLACK_WEBHOOK_URL}"
           LLAMAPARSE_API_KEY:
-            default: ""
-          LOGTAIL_KEY:
-            default: ""
+            default: "${LLAMAPARSE_API_KEY}"
           BULL_AUTH_KEY:
-            default: ""
-          TEST_API_KEY:
-            default: ""
+            default: "${BULL_AUTH_KEY}"
           POSTHOG_API_KEY:
-            default: ""
+            default: "${POSTHOG_API_KEY}"
           POSTHOG_HOST:
-            default: ""
+            default: "${POSTHOG_HOST}"
           SUPABASE_ANON_TOKEN:
-            default: ""
+            default: "${SUPABASE_ANON_TOKEN}"
           SUPABASE_URL:
-            default: ""
+            default: "${SUPABASE_URL}"
           SUPABASE_SERVICE_TOKEN:
-            default: ""
+            default: "${SUPABASE_SERVICE_TOKEN}"
           SCRAPING_BEE_API_KEY:
-            default: ""
+            default: "${SCRAPING_BEE_API_KEY}"
           HOST:
             default: "0.0.0.0"
           SELF_HOSTED_WEBHOOK_URL:
-            default: ""
+            default: "${SELF_HOSTED_WEBHOOK_URL}"
           SERPER_API_KEY:
-            default: ""
+            default: "${SERPER_API_KEY}"
           SEARCHAPI_API_KEY:
-            default: ""
+            default: "${SEARCHAPI_API_KEY}"
           LOGGING_LEVEL:
-            default: ""
+            default: "${LOGGING_LEVEL}"
           FLY_PROCESS_GROUP:
             default: "worker"
         dependencies:
