@@ -1,0 +1,306 @@
+apiVersion: zeabur.com/v1
+kind: Template
+metadata:
+  name: FireCrawl
+spec:
+  description: A distributed web crawling system with Playwright service
+  icon: https://raw.githubusercontent.com/mendableai/firecrawl/main/img/firecrawl_logo.png
+  readme: |+
+    # FireCrawl - Distributed Web Crawling System
+
+    FireCrawl is a powerful API service that takes URLs, crawls them, and converts them into clean markdown or structured data. It crawls all accessible subpages and provides clean data for each, with no sitemap required.
+
+    ## Features
+
+    - **Scraping**: Scrapes URLs and gets content in LLM-ready format (markdown, structured data, screenshot, html)
+    - **Crawling**: Scrapes all URLs of a web page and returns content in LLM-ready format
+    - **Mapping**: Input a website and get all website URLs - extremely fast
+    - **Extraction**: Get structured data from single page, multiple pages or entire websites with AI
+
+    ## Services
+
+    This template deploys the following services:
+
+    ### 1. Playwright Service
+    - Handles web scraping and browser automation
+    - Supports proxy configuration
+    - Can block media content for faster scraping
+
+    ### 2. API Service
+    - Main API endpoint handling requests
+    - Manages job queues and processing
+    - Integrates with Redis for caching and rate limiting
+
+    ### 3. Worker Service
+    - Processes background jobs
+    - Handles queue tasks
+    - Manages crawling operations
+
+    ### 4. Redis
+    - Handles caching and rate limiting
+    - Manages job queues
+    - Provides data persistence
+
+    ## Optional Variables
+    ```
+    OPENAI_BASE_URL=                       # Custom OpenAI API base URL
+    MODEL_NAME=                            # The AI model name to use
+    SUPABASE_URL=                         # Supabase project URL
+    SUPABASE_ANON_TOKEN=                  # Supabase anonymous token
+    SUPABASE_SERVICE_TOKEN=               # Supabase service role token
+    PROXY_SERVER=                         # Proxy server for Playwright service
+    PROXY_USERNAME=                       # Proxy server username
+    PROXY_PASSWORD=                       # Proxy server password
+    BLOCK_MEDIA=true                      # Block media content for faster scraping
+    SLACK_WEBHOOK_URL=                    # Slack webhook URL for notifications
+    LLAMAPARSE_API_KEY=                   # LlamaParse API key
+    SCRAPING_BEE_API_KEY=                 # ScrapingBee API key
+    SERPER_API_KEY=                       # Serper API key
+    SEARCHAPI_API_KEY=                    # SearchAPI API key
+    LOGGING_LEVEL=                        # Logging level
+    BULL_AUTH_KEY=                        # Bull queue authentication key
+    POSTHOG_API_KEY=                      # PostHog API key
+    POSTHOG_HOST=                         # PostHog host
+    SELF_HOSTED_WEBHOOK_URL=              # Self-hosted webhook URL
+    ```
+
+    ## Getting Started
+
+    1. Deploy this template on Zeabur
+    2. Configure the required environment variables
+    3. Access your API endpoint and start crawling!
+
+    For more detailed documentation, visit [FireCrawl Documentation](https://docs.firecrawl.dev)
+
+  variables:
+    - key: OPENAI_API_KEY
+      type: STRING
+      name: OpenAI API Key
+      description: Your OpenAI API key for AI processing
+    - key: MODEL_NAME
+      type: STRING
+      name: Model Name
+      description: The AI model name to use
+    - key: PUBLIC_DOMAIN
+      type: DOMAIN
+      name: Domain
+      description: The domain of your FireCrawl API
+
+  services:
+    - name: playwright-service
+      template: PREBUILT
+      icon: https://playwright.dev/img/playwright-logo.svg
+      spec:
+        source:
+          image: yslinear/firecrawl-playwright-service:latest
+        env:
+          PORT:
+            default: "3000"
+          PROXY_SERVER:
+            default: ""
+          PROXY_USERNAME:
+            default: ""
+          PROXY_PASSWORD:
+            default: ""
+          BLOCK_MEDIA:
+            default: "true"
+
+    - name: api
+      template: PREBUILT
+      icon: https://raw.githubusercontent.com/mendableai/firecrawl/main/img/firecrawl_logo.png
+      spec:
+        source:
+          image: yslinear/firecrawl-api:latest
+        ports:
+          - id: main
+            type: HTTP
+            port: 3002
+        healthCheck:
+          type: HTTP
+          port: "main"
+          http:
+            path: "/health"
+        startupProbe:
+          type: HTTP
+          path: /health
+          port: 3002
+          initialDelaySeconds: 20
+          periodSeconds: 10
+          timeoutSeconds: 5
+          successThreshold: 1
+          failureThreshold: 3
+        env:
+          REDIS_URL:
+            default: "redis://default:${redis.REDIS_PASSWORD}@redis.zeabur.internal:6379"
+          REDIS_RATE_LIMIT_URL:
+            default: "redis://default:${redis.REDIS_PASSWORD}@redis.zeabur.internal:6379"
+          REDIS_HOST:
+            default: redis.zeabur.internal
+          REDIS_PORT:
+            default: "6379"
+          REDIS_PASSWORD:
+            default: ${redis.REDIS_PASSWORD}
+          REDIS_RETRY_DELAY:
+            default: "5000"
+          REDIS_MAX_RETRIES:
+            default: "10"
+          PLAYWRIGHT_MICROSERVICE_URL:
+            default: "http://playwright-service:3000"
+          USE_DB_AUTHENTICATION:
+            default: ""
+          PORT:
+            default: "3002"
+          NUM_WORKERS_PER_QUEUE:
+            default: ""
+          OPENAI_API_KEY:
+            default: "${OPENAI_API_KEY}"
+          OPENAI_BASE_URL:
+            default: "${OPENAI_BASE_URL}"
+          MODEL_NAME:
+            default: "${MODEL_NAME}"
+          SLACK_WEBHOOK_URL:
+            default: ""
+          LLAMAPARSE_API_KEY:
+            default: ""
+          LOGTAIL_KEY:
+            default: ""
+          BULL_AUTH_KEY:
+            default: ""
+          TEST_API_KEY:
+            default: ""
+          POSTHOG_API_KEY:
+            default: ""
+          POSTHOG_HOST:
+            default: ""
+          SUPABASE_ANON_TOKEN:
+            default: ""
+          SUPABASE_URL:
+            default: ""
+          SUPABASE_SERVICE_TOKEN:
+            default: ""
+          SCRAPING_BEE_API_KEY:
+            default: ""
+          HOST:
+            default: "0.0.0.0"
+          SELF_HOSTED_WEBHOOK_URL:
+            default: ""
+          SERPER_API_KEY:
+            default: ""
+          SEARCHAPI_API_KEY:
+            default: ""
+          LOGGING_LEVEL:
+            default: ""
+          FLY_PROCESS_GROUP:
+            default: "app"
+        dependencies:
+          - redis
+          - playwright-service
+      domainKey: PUBLIC_DOMAIN
+
+    - name: worker
+      template: PREBUILT
+      icon: https://raw.githubusercontent.com/mendableai/firecrawl/main/img/firecrawl_logo.png
+      spec:
+        source:
+          image: yslinear/firecrawl-api:latest
+        startupProbe:
+          type: EXEC
+          command: ["node", "-e", "try { require('./dist/src/services/queue-worker.js'); process.exit(0); } catch(e) { console.error(e); process.exit(1); }"]
+          initialDelaySeconds: 25
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 30
+        env:
+          REDIS_URL:
+            default: "redis://default:${redis.REDIS_PASSWORD}@redis.zeabur.internal:6379"
+          REDIS_RATE_LIMIT_URL:
+            default: "redis://default:${redis.REDIS_PASSWORD}@redis.zeabur.internal:6379"
+          REDIS_HOST:
+            default: redis.zeabur.internal
+          REDIS_PORT:
+            default: "6379"
+          REDIS_PASSWORD:
+            default: ${redis.REDIS_PASSWORD}
+          REDIS_RETRY_DELAY:
+            default: "5000"
+          REDIS_MAX_RETRIES:
+            default: "10"
+          PLAYWRIGHT_MICROSERVICE_URL:
+            default: "http://playwright-service:3000"
+          USE_DB_AUTHENTICATION:
+            default: ""
+          PORT:
+            default: "3002"
+          NUM_WORKERS_PER_QUEUE:
+            default: ""
+          OPENAI_API_KEY:
+            default: "${OPENAI_API_KEY}"
+          OPENAI_BASE_URL:
+            default: "${OPENAI_BASE_URL}"
+          MODEL_NAME:
+            default: "${MODEL_NAME}"
+          SLACK_WEBHOOK_URL:
+            default: ""
+          LLAMAPARSE_API_KEY:
+            default: ""
+          LOGTAIL_KEY:
+            default: ""
+          BULL_AUTH_KEY:
+            default: ""
+          TEST_API_KEY:
+            default: ""
+          POSTHOG_API_KEY:
+            default: ""
+          POSTHOG_HOST:
+            default: ""
+          SUPABASE_ANON_TOKEN:
+            default: ""
+          SUPABASE_URL:
+            default: ""
+          SUPABASE_SERVICE_TOKEN:
+            default: ""
+          SCRAPING_BEE_API_KEY:
+            default: ""
+          HOST:
+            default: "0.0.0.0"
+          SELF_HOSTED_WEBHOOK_URL:
+            default: ""
+          SERPER_API_KEY:
+            default: ""
+          SEARCHAPI_API_KEY:
+            default: ""
+          LOGGING_LEVEL:
+            default: ""
+          FLY_PROCESS_GROUP:
+            default: "worker"
+        dependencies:
+          - redis
+          - playwright-service
+          - api
+
+    - name: redis
+      template: PREBUILT
+      icon: https://raw.githubusercontent.com/zeabur/service-icons/main/marketplace/redis.svg
+      spec:
+        source:
+          image: redis:alpine
+        ports:
+          - id: main
+            type: TCP
+            port: 6379
+        volumes:
+          - id: data
+            dir: /data
+        env:
+          REDIS_PASSWORD:
+            default: ${PASSWORD}
+            expose: true
+        healthCheck:
+          type: TCP
+          port: "main"
+        command:
+          - redis-server
+          - --bind
+          - 0.0.0.0
+          - --requirepass
+          - "${PASSWORD}"
